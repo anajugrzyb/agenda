@@ -1,7 +1,17 @@
 from django.shortcuts import render
 
+from contact.models import Contact
+
+
 def index(request):
+    contacts = Contact.objects.all()
+
+    context = {
+        'contacts': contacts,
+    }
+
     return render(
-        request, 
-        'contect/index.html'
+        request,
+        'contact/index.html',
+        context
     )
