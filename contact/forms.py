@@ -47,8 +47,8 @@ class ContactForm(forms.ModelForm):
                 code='invalid'
             )
         
-        self.add_error('first_name', msg)
-        self.add_error('last_name', msg)
+            self.add_error('first_name', msg)
+            self.add_error('last_name', msg)
 
         return super().clean()
 
