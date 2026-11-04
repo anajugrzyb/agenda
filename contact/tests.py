@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from contact.models import Contact
+from contact.models import Category, Contact
 
 
 TEST_MEDIA_DIRECTORY = tempfile.TemporaryDirectory(dir=settings.BASE_DIR)
@@ -216,3 +216,177 @@ class ContactPrivacyTests(TestCase):
 
         self.assertRedirects(response, reverse('contact:index'))
         self.assertFalse(Contact.objects.filter(pk=self.owner_contact.pk).exists())
+
+    def test_contact_and_category_string_representations(self):
+        category = Category.objects.create(name='Trabalho')
+
+        self.assertEqual(str(category), 'Trabalho')
+        self.assertEqual(str(self.owner_contact), 'Contato do proprietário ')
+
+    def test_empty_search_redirects_to_index(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.get(reverse('contact:search'), {'q': '   '})
+
+        self.assertRedirects(response, reverse('contact:index'))
+
+    def test_contact_without_picture_redirects_to_detail(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.get(
+            reverse('contact:contact_picture', args=(self.owner_contact.pk,))
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('contact:contact', args=(self.owner_contact.pk,)),
+        )
+
+    def test_owner_can_create_contact(self):
+        self.client.force_login(self.owner)
+
+        get_response = self.client.get(reverse('contact:create'))
+        self.assertEqual(get_response.status_code, 200)
+
+        response = self.client.post(
+            reverse('contact:create'),
+            {
+                'first_name': 'Novo',
+                'last_name': 'Contato',
+                'phone': '333333333',
+                'email': 'novo@example.com',
+                'description': '',
+                'category': '',
+            },
+        )
+
+        created = Contact.objects.get(email='novo@example.com')
+        self.assertEqual(created.owner, self.owner)
+        self.assertRedirects(
+            response,
+            reverse('contact:update', args=(created.pk,)),
+        )
+
+    def test_create_rejects_equal_first_and_last_names(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            reverse('contact:create'),
+            {
+                'first_name': 'Mesmo',
+                'last_name': 'Mesmo',
+                'phone': '333333333',
+                'email': '',
+                'description': '',
+                'category': '',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(
+            response.context['form'],
+            'first_name',
+            'Primeiro nome não pode ser igual ao segundo',
+        )
+        self.assertFalse(Contact.objects.filter(first_name='Mesmo').exists())
+
+    def test_owner_can_update_contact(self):
+        self.client.force_login(self.owner)
+        url = reverse('contact:update', args=(self.owner_contact.pk,))
+
+        get_response = self.client.get(url)
+        self.assertEqual(get_response.status_code, 200)
+
+        response = self.client.post(
+            url,
+            {
+                'first_name': 'Nome atualizado',
+                'last_name': 'Sobrenome',
+                'phone': '444444444',
+                'email': 'atualizado@example.com',
+                'description': 'Atualizado pelos testes',
+                'category': '',
+            },
+        )
+
+        self.assertRedirects(response, url)
+        self.owner_contact.refresh_from_db()
+        self.assertEqual(self.owner_contact.first_name, 'Nome atualizado')
+        self.assertEqual(self.owner_contact.phone, '444444444')
+
+    def test_registration_creates_user_and_rejects_duplicate_email(self):
+        registration_data = {
+            'first_name': 'Nova',
+            'last_name': 'Pessoa',
+            'email': 'nova@example.com',
+            'username': 'nova-pessoa',
+            'password1': 'Strong-registration-password-9382',
+            'password2': 'Strong-registration-password-9382',
+        }
+
+        response = self.client.post(reverse('contact:register'), registration_data)
+
+        self.assertRedirects(response, reverse('contact:login'))
+        self.assertTrue(User.objects.filter(username='nova-pessoa').exists())
+
+        registration_data['username'] = 'outra-pessoa'
+        duplicate_response = self.client.post(
+            reverse('contact:register'),
+            registration_data,
+        )
+
+        self.assertEqual(duplicate_response.status_code, 200)
+        self.assertFormError(
+            duplicate_response.context['form'],
+            'email',
+            'Já existe este e-mail',
+        )
+
+    def test_login_rejects_invalid_credentials_and_accepts_valid_ones(self):
+        invalid_response = self.client.post(
+            reverse('contact:login'),
+            {'username': self.owner.username, 'password': 'senha-incorreta'},
+        )
+        self.assertEqual(invalid_response.status_code, 200)
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+        response = self.client.post(
+            reverse('contact:login'),
+            {
+                'username': self.owner.username,
+                'password': 'strong-test-password',
+            },
+        )
+
+        self.assertRedirects(response, reverse('contact:index'))
+        self.assertIn('_auth_user_id', self.client.session)
+
+    def test_profile_rejects_mismatched_and_weak_passwords(self):
+        self.client.force_login(self.owner)
+        base_data = {
+            'first_name': 'Ana',
+            'last_name': 'Silva',
+            'email': 'ana@example.com',
+            'username': 'owner',
+        }
+
+        mismatched_response = self.client.post(
+            reverse('contact:user_update'),
+            {
+                **base_data,
+                'password1': 'new-strong-test-password',
+                'password2': 'different-password',
+            },
+        )
+        self.assertFormError(
+            mismatched_response.context['form'],
+            'password2',
+            'Senhas não batem',
+        )
+
+        weak_response = self.client.post(
+            reverse('contact:user_update'),
+            {**base_data, 'password1': '123', 'password2': '123'},
+        )
+        self.assertEqual(weak_response.status_code, 200)
+        self.assertTrue(weak_response.context['form'].errors['password1'])

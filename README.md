@@ -142,11 +142,15 @@ envolvidos estiverem preparados para HTTPS permanente.
 
 ## Testes
 
-O projeto possui testes para isolamento entre usuários, autenticação, fotos
-protegidas, atualização de perfil, alteração de senha, logout e exclusão.
+O projeto possui 23 testes para isolamento entre usuários, autenticação, fotos
+protegidas, CRUD de contatos, atualização de perfil, alteração de senha, logout
+e exclusão. A cobertura atual é de 97,4%, com limite mínimo de 95% na CI.
 
 ```bash
-python manage.py test
+python -m pip install -r requirements-dev.txt
+python -m coverage run manage.py test
+python -m coverage report
+python -m coverage html
 python manage.py check
 ```
 
@@ -157,13 +161,13 @@ python manage.py check --deploy
 ```
 
 O workflow de integração contínua executa automaticamente os checks, verifica
-se existem migrations ausentes e roda a suíte de testes em cada push ou pull
-request direcionado à branch `main`.
+se existem migrations ausentes, exige pelo menos 95% de cobertura e publica o
+relatório HTML como artefato em cada push ou pull request direcionado à branch
+`main`.
 
 ## Próximas melhorias
 
 - Publicar uma demonstração com PostgreSQL.
-- Adicionar relatório de cobertura dos testes.
 - Adicionar importação e exportação de contatos em CSV.
 - Incluir filtros por categoria e ordenação da listagem.
 
