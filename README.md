@@ -1,5 +1,7 @@
 # Agenda de Contatos
 
+[![CI](https://github.com/anajugrzyb/agenda/actions/workflows/ci.yml/badge.svg)](https://github.com/anajugrzyb/agenda/actions/workflows/ci.yml)
+
 Aplicação web para gerenciamento privado de contatos, desenvolvida com Django.
 Cada usuário possui sua própria agenda e pode cadastrar, pesquisar, editar e
 excluir contatos sem expor dados para outras contas.
@@ -154,11 +156,14 @@ Para revisar a configuração antes de um deploy:
 python manage.py check --deploy
 ```
 
+O workflow de integração contínua executa automaticamente os checks, verifica
+se existem migrations ausentes e roda a suíte de testes em cada push ou pull
+request direcionado à branch `main`.
+
 ## Próximas melhorias
 
 - Publicar uma demonstração com PostgreSQL.
-- Adicionar integração contínua com GitHub Actions.
-- Aprimorar a experiência visual e a responsividade.
+- Adicionar relatório de cobertura dos testes.
 - Adicionar importação e exportação de contatos em CSV.
 - Incluir filtros por categoria e ordenação da listagem.
 
