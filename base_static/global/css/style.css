@@ -101,6 +101,13 @@ svg {
   background: var(--clr-light-shadow-10);
 }
 
+.menu-button {
+  background: transparent;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
 .content {
   max-width: var(--main-page-width);
   margin: calc(var(--spacing) * 2) auto;

@@ -22,16 +22,7 @@
         {% if user == contact.owner %}
             <div class="contact-links">
                 <a class="btn btn-link" href="{% url "contact:update" contact.id %}">Update</a>
-
-                <form action="{% url "contact:delete" contact.id %}" method="POST"> 
-                    {% csrf_token %}
-                    {% if confirmation == 'no' %}
-                    <input type="hidden" name="confirmation" value="yes">
-                        <button class="btn btn-link btn-delete" type="submit">Confirma?</button>
-                    {% else %}
-                        <button class="btn btn-link btn-delete" type="submit">Delete</button>
-                    {% endif %}
-                </form>
+                <a class="btn btn-link btn-delete" href="{% url 'contact:delete' contact.id %}">Delete</a>
             </div>
         {% endif %}
     </div>

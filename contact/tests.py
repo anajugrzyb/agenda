@@ -21,6 +21,9 @@ class ContactPrivacyTests(TestCase):
         cls.owner = User.objects.create_user(
             username='owner',
             password='strong-test-password',
+            first_name='Ana',
+            last_name='Silva',
+            email='ana@example.com',
         )
         cls.other_user = User.objects.create_user(
             username='other',
@@ -138,3 +141,78 @@ class ContactPrivacyTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'image/gif')
         response.close()
+
+    def test_profile_form_is_filled_with_current_user_data(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.get(reverse('contact:user_update'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form'].instance, self.owner)
+        self.assertContains(response, 'value="Ana"')
+        self.assertContains(response, 'value="ana@example.com"')
+
+    def test_password_update_keeps_user_logged_in(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            reverse('contact:user_update'),
+            {
+                'first_name': 'Ana',
+                'last_name': 'Silva',
+                'email': 'ana@example.com',
+                'username': 'owner',
+                'password1': 'new-strong-test-password',
+                'password2': 'new-strong-test-password',
+            },
+        )
+
+        self.assertRedirects(response, reverse('contact:user_update'))
+        self.owner.refresh_from_db()
+        self.assertTrue(self.owner.check_password('new-strong-test-password'))
+        self.assertIn('_auth_user_id', self.client.session)
+
+    def test_logout_rejects_get_and_accepts_post(self):
+        self.client.force_login(self.owner)
+
+        get_response = self.client.get(reverse('contact:logout'))
+
+        self.assertEqual(get_response.status_code, 405)
+        self.assertIn('_auth_user_id', self.client.session)
+
+        post_response = self.client.post(reverse('contact:logout'))
+
+        self.assertRedirects(post_response, reverse('contact:login'))
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_delete_get_only_displays_confirmation(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.get(
+            reverse('contact:delete', args=(self.owner_contact.pk,))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'contact/delete_confirmation.html')
+        self.assertTrue(Contact.objects.filter(pk=self.owner_contact.pk).exists())
+
+    def test_delete_requires_explicit_confirmation(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            reverse('contact:delete', args=(self.owner_contact.pk,))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(Contact.objects.filter(pk=self.owner_contact.pk).exists())
+
+    def test_owner_can_delete_contact_with_confirmation(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            reverse('contact:delete', args=(self.owner_contact.pk,)),
+            {'confirmation': 'yes'},
+        )
+
+        self.assertRedirects(response, reverse('contact:index'))
+        self.assertFalse(Contact.objects.filter(pk=self.owner_contact.pk).exists())

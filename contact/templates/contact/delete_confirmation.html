@@ -1,0 +1,22 @@
+{% extends "global/base.html" %}
+
+{% block content %}
+  <div class="single-contact">
+    <h1>Excluir contato?</h1>
+    <p>
+      Você está prestes a excluir
+      <strong>{{ contact.first_name }} {{ contact.last_name }}</strong>.
+      Essa ação não pode ser desfeita.
+    </p>
+
+    <div class="contact-links">
+      <a class="btn btn-link" href="{% url 'contact:contact' contact.id %}">Cancelar</a>
+
+      <form action="{% url 'contact:delete' contact.id %}" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="confirmation" value="yes">
+        <button class="btn btn-link btn-delete" type="submit">Excluir definitivamente</button>
+      </form>
+    </div>
+  </div>
+{% endblock content %}

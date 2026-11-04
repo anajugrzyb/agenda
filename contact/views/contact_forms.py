@@ -1,8 +1,11 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods
+
 from contact.forms import ContactForm
 from contact.models import Contact
-from django.contrib.auth.decorators import login_required
 
 @login_required(login_url='contact:login')   
 def create(request):
@@ -78,7 +81,8 @@ def update(request, contact_id):
         context
     )
 
-@login_required(login_url='contact:login')      
+@login_required(login_url='contact:login')
+@require_http_methods(['GET', 'POST'])
 def delete(request, contact_id):
     contact = get_object_or_404(
         Contact,
@@ -87,16 +91,15 @@ def delete(request, contact_id):
         owner=request.user,
     )
     
-    confirmation = request.POST.get('confirmation', 'no')
-    
-    if confirmation == 'yes':
+    if request.method == 'POST' and request.POST.get('confirmation') == 'yes':
         contact.delete()
+        messages.success(request, 'Contato excluído com sucesso')
         return redirect('contact:index')
+
     return render(
         request,
-        'contact/contact.html',
+        'contact/delete_confirmation.html',
         {
             'contact': contact,
-            'confirmation': confirmation,
         }
     )

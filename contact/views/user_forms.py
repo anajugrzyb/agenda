@@ -3,6 +3,7 @@ from contact.forms import RegisterForm, RegisterUpdateForm
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.views.decorators.http import require_POST
 
 def register(request):
     form = RegisterForm()
@@ -25,7 +26,7 @@ def register(request):
 
 @login_required(login_url='contact:login')    
 def user_update(request):
-    form = RegisterUpdateForm()
+    form = RegisterUpdateForm(instance=request.user)
     
     if request.method != 'POST':
         return render(
@@ -47,7 +48,9 @@ def user_update(request):
             }
         )
         
-    form.save()
+    user = form.save()
+    auth.update_session_auth_hash(request, user)
+    messages.success(request, 'Perfil atualizado com sucesso')
     return redirect('contact:user_update')
         
     
@@ -72,7 +75,8 @@ def login_view(request):
         }
     )
     
-@login_required(login_url='contact:login')      
+@login_required(login_url='contact:login')
+@require_POST
 def logout_view(request):
     auth.logout(request)
     return redirect('contact:login')
