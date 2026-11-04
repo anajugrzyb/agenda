@@ -15,7 +15,7 @@
 
         {% if contact.picture %}
             <p>
-                <img src="{{ contact.picture.url }}" alt="{{ contact.first_name }} {{ contact.last_name }}">
+                <img src="{% url 'contact:contact_picture' contact.id %}" alt="{{ contact.first_name }} {{ contact.last_name }}">
             </p>
         {% endif %}
     
