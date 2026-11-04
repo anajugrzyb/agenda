@@ -2,9 +2,13 @@
 
 {% block content %}
   <div class="form-wrapper">
+    <a class="back-link" href="{% url 'contact:index' %}">← Voltar para contatos</a>
+    <div class="form-heading">
+      <p class="eyebrow">Sua conta</p>
+      <h1>Meu perfil</h1>
+      <p>Atualize seus dados ou altere sua senha.</p>
+    </div>
 
-    <h2>Update User</h2>
-    
-    {% include "contact\partials\_user-form.html" %}
+    {% include "contact/partials/_user-form.html" with submit_label="Salvar alterações" %}
   </div>
 {% endblock content %}

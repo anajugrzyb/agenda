@@ -2,9 +2,13 @@
 
 {% block content %}
   <div class="form-wrapper">
+    <div class="form-heading">
+      <p class="eyebrow">Comece agora</p>
+      <h1>Crie sua conta</h1>
+      <p>Tenha uma agenda pessoal protegida e acessível.</p>
+    </div>
 
-    <h2>Register</h2>
-    
-    {% include "contact\partials\_user-form.html" %}
+    {% include "contact/partials/_user-form.html" with submit_label="Criar conta" %}
+    <p class="form-footer">Já possui uma conta? <a href="{% url 'contact:login' %}">Entrar</a>.</p>
   </div>
 {% endblock content %}

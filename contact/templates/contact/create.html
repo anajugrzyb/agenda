@@ -2,8 +2,12 @@
 
 {% block content %}
   <div class="form-wrapper">
-
-    <h2>Contact</h2>
+    <a class="back-link" href="{% url 'contact:index' %}">← Voltar para contatos</a>
+    <div class="form-heading">
+      <p class="eyebrow">{% if form.instance.pk %}Edição{% else %}Cadastro{% endif %}</p>
+      <h1>{% if form.instance.pk %}Editar contato{% else %}Novo contato{% endif %}</h1>
+      <p>Preencha as informações que deseja manter na sua agenda.</p>
+    </div>
     
     <form 
       action="{{ form_action }}"
@@ -24,9 +28,10 @@
           {% endif %}
         </div>
 
-          {% if field.name == 'picture' and field.value.url %}
+          {% if field.name == 'picture' and form.instance.pk and form.instance.picture %}
           <div class="form-group">
-              <img src='{{ field.value.url }}' alt=''>
+              <span class="field-label">Foto atual</span>
+              <img class="form-preview" src="{% url 'contact:contact_picture' form.instance.pk %}" alt="Foto atual de {{ form.instance.first_name }}">
           </div>
           {% endif %}
         {% endfor %}
@@ -43,8 +48,9 @@
 
 
       <div class="form-content">
-        <div class="form-group">
-          <button class="btn" type="submit">Send</button>
+        <div class="form-actions">
+          <a class="btn btn-secondary" href="{% url 'contact:index' %}">Cancelar</a>
+          <button class="btn" type="submit">Salvar contato</button>
         </div>
       </div>
 

@@ -1,29 +1,36 @@
 {% extends "global/base.html" %}
 
 {% block content %}
-    <div class="single-contact">
-        <h1 class="single-contact-name">
-            {{ contact.first_name }} {{ contact.last_name }}
-        </h1>
+  <a class="back-link" href="{% url 'contact:index' %}">← Voltar para contatos</a>
 
-        <p><b>ID: </b>{{ contact.id }}</p>
-        <p><b>E-mail: </b>{{ contact.email }}</p>
-        <p><b>Phone: </b>{{ contact.phone }}</p>
-        <p><b>Created Date: </b>{{ contact.created_date }}</p>
-        <p><b>Description: </b>{{ contact.description }}</p> 
-        <p><b>Category: </b>{{ contact.category.name }}</p>
+  <article class="detail-card">
+    <header class="detail-header">
+      {% if contact.picture %}
+        <img class="detail-avatar" src="{% url 'contact:contact_picture' contact.id %}" alt="Foto de {{ contact.first_name }} {{ contact.last_name }}">
+      {% else %}
+        <span class="detail-avatar contact-avatar-placeholder" aria-hidden="true">{{ contact.first_name|first|upper }}</span>
+      {% endif %}
 
+      <div>
+        <p class="eyebrow">Contato</p>
+        <h1>{{ contact.first_name }} {{ contact.last_name }}</h1>
         {% if contact.picture %}
-            <p>
-                <img src="{% url 'contact:contact_picture' contact.id %}" alt="{{ contact.first_name }} {{ contact.last_name }}">
-            </p>
+          <span class="sr-only">Este contato possui uma foto.</span>
         {% endif %}
-    
-        {% if user == contact.owner %}
-            <div class="contact-links">
-                <a class="btn btn-link" href="{% url "contact:update" contact.id %}">Update</a>
-                <a class="btn btn-link btn-delete" href="{% url 'contact:delete' contact.id %}">Delete</a>
-            </div>
-        {% endif %}
+        {% if contact.category %}<span class="contact-tag">{{ contact.category.name }}</span>{% endif %}
+      </div>
+    </header>
+
+    <dl class="detail-list">
+      <div><dt>Telefone</dt><dd>{{ contact.phone|default:"Não informado" }}</dd></div>
+      <div><dt>E-mail</dt><dd>{{ contact.email|default:"Não informado" }}</dd></div>
+      <div><dt>Adicionado em</dt><dd>{{ contact.created_date|date:"d/m/Y \à\s H:i" }}</dd></div>
+      <div class="detail-list-wide"><dt>Observações</dt><dd>{{ contact.description|default:"Nenhuma observação."|linebreaksbr }}</dd></div>
+    </dl>
+
+    <div class="contact-links">
+      <a class="btn" href="{% url 'contact:update' contact.id %}">Editar contato</a>
+      <a class="btn btn-danger-ghost" href="{% url 'contact:delete' contact.id %}">Excluir</a>
     </div>
+  </article>
 {% endblock content %}

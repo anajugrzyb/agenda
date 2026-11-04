@@ -1,21 +1,19 @@
 {% extends "global/base.html" %}
 
 {% block content %}
-  <div class="single-contact">
+  <div class="confirmation-card">
+    <span class="confirmation-icon" aria-hidden="true">!</span>
+    <p class="eyebrow danger-text">Ação permanente</p>
     <h1>Excluir contato?</h1>
-    <p>
-      Você está prestes a excluir
-      <strong>{{ contact.first_name }} {{ contact.last_name }}</strong>.
-      Essa ação não pode ser desfeita.
-    </p>
+    <p>Você está prestes a excluir <strong>{{ contact.first_name }} {{ contact.last_name }}</strong>. Essa ação não pode ser desfeita.</p>
 
     <div class="contact-links">
-      <a class="btn btn-link" href="{% url 'contact:contact' contact.id %}">Cancelar</a>
+      <a class="btn btn-secondary" href="{% url 'contact:contact' contact.id %}">Cancelar</a>
 
       <form action="{% url 'contact:delete' contact.id %}" method="POST">
         {% csrf_token %}
         <input type="hidden" name="confirmation" value="yes">
-        <button class="btn btn-link btn-delete" type="submit">Excluir definitivamente</button>
+        <button class="btn btn-danger" type="submit">Excluir definitivamente</button>
       </form>
     </div>
   </div>

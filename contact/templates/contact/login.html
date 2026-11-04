@@ -2,18 +2,20 @@
 
 {% block content %}
   <div class="form-wrapper">
-
-    <h2>Login</h2>
+    <div class="form-heading">
+      <p class="eyebrow">Bem-vindo de volta</p>
+      <h1>Entrar na sua agenda</h1>
+      <p>Acesse seus contatos de forma privada e segura.</p>
+    </div>
 
     {% if user.is_authenticated %}
-      <p>
-        Você fez o login como {{ user.username }}.
-        Clique <a href="{% url "contact:logout" %}">aqui</a> para sair.
-      </p>
+      <div class="empty-state compact">
+        <p>Você já está conectado como <strong>{{ user.username }}</strong>.</p>
+        <a class="btn" href="{% url 'contact:index' %}">Abrir minha agenda</a>
+      </div>
     {% else %}
-      {% include "contact\partials\_user-form.html" %}
+      {% include "contact/partials/_user-form.html" with submit_label="Entrar" %}
+      <p class="form-footer">Ainda não tem uma conta? <a href="{% url 'contact:register' %}">Cadastre-se</a>.</p>
     {% endif %}
-    
-    
   </div>
 {% endblock content %}

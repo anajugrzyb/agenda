@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect
-from contact.forms import RegisterForm, RegisterUpdateForm
+from contact.forms import LoginForm, RegisterForm, RegisterUpdateForm
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
 from django.views.decorators.http import require_POST
 
 def register(request):
@@ -55,16 +54,16 @@ def user_update(request):
         
     
 def login_view(request):  
-    form = AuthenticationForm(request)  
+    form = LoginForm(request)
     if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
+        form = LoginForm(request, data=request.POST)
         
         if form.is_valid():
             user = form.get_user()
             auth.login(request, user)
             messages.success(request, 'Logado com sucesso')
             return redirect('contact:index')
-        messages.error(request, 'Login invalido')
+        messages.error(request, 'Usuário ou senha inválidos')
         
      
     return render(

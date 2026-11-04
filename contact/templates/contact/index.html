@@ -1,57 +1,57 @@
 {% extends 'global/base.html' %}
 
 {% block content %}
-{% if page_obj %}
-  <div class="responsive-table">
-       <table class="contacts-table">
-            <caption class="table-caption">
-                Contacts
-            </caption>
-
-      <thead>
-        <tr class="table-row table-row-header">
-          <th class="table-header">ID</th>
-          <th class="table-header">First Name</th>
-          <th class="table-header">Last Name</th>
-          <th class="table-header">Phone</th>
-          <th class="table-header">E-mail</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for contact in page_obj %}
-            <tr class="table-row">
-                <td class="table-cel">
-                    <a 
-                    class="table-link" 
-                    href="{% url "contact:contact"  contact.id %}">
-                        {{ contact.id }}
-                    </a>
-                </td>
-                <td class="table-cel">
-                        {{ contact.first_name }}
-                </td>
-                <td class="table-cel">
-                        {{ contact.last_name }}
-                </td>
-                <td class="table-cel">
-                        {{ contact.phone }}
-                </td>
-                <td class="table-cel">
-                        {{ contact.email }}
-                </td>
-            </tr>
-        {% endfor %}
-      </tbody>
-
-       </table>
-  </div>
-{% else %}
-<div class="single-contact">
-        <h1 class="single-contact-name">
-            Nenhum contato encontrado.
-        </h1>
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Sua agenda pessoal</p>
+      <h1>{% if request.GET.q %}Resultados da busca{% else %}Seus contatos{% endif %}</h1>
+      <p class="page-subtitle">
+        {% if request.GET.q %}
+          Busca por “{{ request.GET.q }}”
+        {% else %}
+          {{ page_obj.paginator.count }} contato{{ page_obj.paginator.count|pluralize }} na sua agenda
+        {% endif %}
+      </p>
     </div>
+    <a class="btn" href="{% url 'contact:create' %}">+ Novo contato</a>
+  </section>
 
-{% endif %}
+  {% if page_obj %}
+    <div class="contacts-grid">
+      {% for contact in page_obj %}
+        <article class="contact-card">
+          <a class="contact-card-link" href="{% url 'contact:contact' contact.id %}">
+            {% if contact.picture %}
+              <img class="contact-avatar" src="{% url 'contact:contact_picture' contact.id %}" alt="Foto de {{ contact.first_name }} {{ contact.last_name }}">
+            {% else %}
+              <span class="contact-avatar contact-avatar-placeholder" aria-hidden="true">{{ contact.first_name|first|upper }}</span>
+            {% endif %}
+
+            <span class="contact-card-content">
+              <span class="contact-name">{{ contact.first_name }} {{ contact.last_name }}</span>
+              <span class="contact-meta">{{ contact.phone|default:"Telefone não informado" }}</span>
+              <span class="contact-meta">{{ contact.email|default:"E-mail não informado" }}</span>
+              {% if contact.category %}
+                <span class="contact-tag">{{ contact.category.name }}</span>
+              {% endif %}
+            </span>
+            <span class="contact-arrow" aria-hidden="true">→</span>
+          </a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <section class="empty-state">
+      <span class="empty-state-icon" aria-hidden="true">A</span>
+      {% if request.GET.q %}
+        <h2>Nenhum contato encontrado</h2>
+        <p>Tente buscar por outro nome, telefone ou e-mail.</p>
+        <a class="btn btn-secondary" href="{% url 'contact:index' %}">Limpar busca</a>
+      {% else %}
+        <h2>Sua agenda está vazia</h2>
+        <p>Adicione o primeiro contato para começar a organizar sua rede.</p>
+        <a class="btn" href="{% url 'contact:create' %}">Adicionar primeiro contato</a>
+      {% endif %}
+    </section>
+  {% endif %}
 {% endblock content %}

@@ -1,12 +1,13 @@
 from django.core.exceptions import ValidationError
 from django import forms
 from django.contrib.auth import password_validation
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from . import models
 
 class ContactForm(forms.ModelForm):
     picture = forms.ImageField(
+        label='Foto',
         widget=forms.FileInput(
             attrs={
                 'accept': 'image/*',
@@ -15,12 +16,20 @@ class ContactForm(forms.ModelForm):
         required=False
     )
     class Meta:
-        model = models.Contact 
+        model = models.Contact
         fields = (
             'first_name', 'last_name', 'phone',
             'email', 'description', 'category',
-                    'picture',
-            )
+            'picture',
+        )
+        labels = {
+            'first_name': 'Nome',
+            'last_name': 'Sobrenome',
+            'phone': 'Telefone',
+            'email': 'E-mail',
+            'description': 'Observações',
+            'category': 'Categoria',
+        }
         
     def clean(self):
         cleaned_data = self.cleaned_data
@@ -38,30 +47,20 @@ class ContactForm(forms.ModelForm):
 
         return super().clean()
 
-    def clean_first_name(self):
-        first_name = self.cleaned_data.get('first_name')
 
-        if first_name == 'ABC':
-            self.add_error(
-                'first_name',
-                ValidationError(
-                    'Veio do add_error',
-                    code='invalid'
-                )
-            )
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(label='Usuário')
+    password = forms.CharField(
+        label='Senha',
+        strip=False,
+        widget=forms.PasswordInput(attrs={'autocomplete': 'current-password'}),
+    )
 
-        return first_name
-    
+
 class RegisterForm(UserCreationForm):
-    first_name = forms.CharField( 
-            required=True,
-            min_length=3,
-            )
-    last_name = forms.CharField( 
-            required=True,
-            min_length=3,
-            )
-    email = forms.EmailField()
+    first_name = forms.CharField(label='Nome', required=True, min_length=3)
+    last_name = forms.CharField(label='Sobrenome', required=True, min_length=3)
+    email = forms.EmailField(label='E-mail')
     
     class Meta:
         model = User
@@ -69,6 +68,7 @@ class RegisterForm(UserCreationForm):
             'first_name', 'last_name', 'email',
             'username', 'password1', 'password2',
         )
+        labels = {'username': 'Usuário'}
         
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -81,23 +81,23 @@ class RegisterForm(UserCreationForm):
     
 class RegisterUpdateForm(forms.ModelForm):
     first_name = forms.CharField(
+        label='Nome',
         min_length=2,
         max_length=30,
         required=True,
-        help_text='Required.',
         error_messages={
-            'min_length': 'Please, add more than 2 letters.'
+            'min_length': 'Informe pelo menos 2 letras.'
         }
     )
     last_name = forms.CharField(
+        label='Sobrenome',
         min_length=2,
         max_length=30,
         required=True,
-        help_text='Required.'
     )
 
     password1 = forms.CharField(
-        label="Password",
+        label='Nova senha',
         strip=False,
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
         help_text=password_validation.password_validators_help_text_html(),
@@ -105,10 +105,10 @@ class RegisterUpdateForm(forms.ModelForm):
     )
 
     password2 = forms.CharField(
-        label="Password 2",
+        label='Confirme a nova senha',
         strip=False,
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
-        help_text='Use the same password as before.',
+        help_text='Repita a nova senha.',
         required=False,
     )
 
@@ -118,6 +118,10 @@ class RegisterUpdateForm(forms.ModelForm):
             'first_name', 'last_name', 'email',
             'username',
         )
+        labels = {
+            'email': 'E-mail',
+            'username': 'Usuário',
+        }
 
     def save(self, commit=True):
         cleaned_data = self.cleaned_data
