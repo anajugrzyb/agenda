@@ -17,6 +17,23 @@ venv\Scripts\activate # Windows
 ### Instale as dependências
 pip install -r requirements.txt
 
+### Configure as variáveis de ambiente
+O arquivo `.env.example` documenta as variáveis aceitas. A aplicação lê essas
+variáveis diretamente do ambiente; ela não carrega o arquivo `.env`
+automaticamente.
+
+No PowerShell, para desenvolvimento local:
+
+```powershell
+$env:DJANGO_DEBUG = "true"
+$env:DJANGO_SECRET_KEY = "uma-chave-local-longa-e-aleatoria"
+$env:DJANGO_ALLOWED_HOSTS = "localhost,127.0.0.1"
+```
+
+Em produção, defina `DJANGO_DEBUG=false`, use uma chave secreta exclusiva e
+informe o domínio público em `DJANGO_ALLOWED_HOSTS`. Se a aplicação estiver
+atrás de um proxy reverso confiável, defina também `DJANGO_BEHIND_PROXY=true`.
+
 ### Execute o projeto
 python manage.py migrate
 
