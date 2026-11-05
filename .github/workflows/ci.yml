@@ -43,6 +43,20 @@ jobs:
       - name: Run Django system checks
         run: python manage.py check
 
+      - name: Validate production configuration
+        env:
+          DJANGO_DEBUG: "false"
+          DJANGO_SECRET_KEY: ci-only-production-check-secret-key-with-more-than-fifty-characters
+          DJANGO_ALLOWED_HOSTS: agenda.example.com
+          DJANGO_CSRF_TRUSTED_ORIGINS: https://agenda.example.com
+          DATABASE_URL: postgresql://agenda:secret@localhost:5432/agenda
+          DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: "true"
+          DJANGO_SECURE_HSTS_PRELOAD: "true"
+        run: |
+          python manage.py check --deploy
+          python manage.py collectstatic --noinput
+          gunicorn --check-config project.wsgi:application
+
       - name: Check for missing migrations
         run: python manage.py makemigrations --check --dry-run
 
