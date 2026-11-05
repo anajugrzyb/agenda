@@ -5,6 +5,7 @@
 __pycache__
 db.sqlite3
 static/
+staticfiles/
 media/
 pictures/
 project/local_settings.py

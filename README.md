@@ -36,6 +36,8 @@ excluir contatos sem expor dados para outras contas.
 - Python 3.13
 - Django 5.2
 - SQLite para desenvolvimento local
+- PostgreSQL para produção
+- Gunicorn e WhiteNoise para execução em produção
 - HTML5 e CSS3
 - Pillow para processamento de imagens
 - Django TestCase para testes automatizados
@@ -134,6 +136,9 @@ Acesse:
 | `DJANGO_SECRET_KEY` | Sim | Chave longa, aleatória e exclusiva do ambiente. |
 | `DJANGO_ALLOWED_HOSTS` | Sim | Hosts separados por vírgula. |
 | `DJANGO_CSRF_TRUSTED_ORIGINS` | Conforme o deploy | Origens HTTPS separadas por vírgula. |
+| `DATABASE_URL` | Sim | URL de conexão com o PostgreSQL. Sem ela, o projeto usa SQLite. |
+| `DJANGO_DATABASE_CONN_MAX_AGE` | Não | Tempo de reutilização das conexões; padrão de 600 segundos. |
+| `DJANGO_DATABASE_SSL_REQUIRE` | Não | Exige SSL no banco; por padrão acompanha o modo de produção. |
 | `DJANGO_BEHIND_PROXY` | Não | Use `true` apenas atrás de um proxy confiável. |
 | `DJANGO_SECURE_HSTS_SECONDS` | Não | Duração do HSTS; o padrão de produção é 3600 segundos. |
 | `DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS` | Não | Inclui subdomínios na política HSTS. |
@@ -142,11 +147,31 @@ Acesse:
 Ative HSTS para subdomínios ou preload somente quando todos os domínios
 envolvidos estiverem preparados para HTTPS permanente.
 
+## Implantação em produção
+
+O projeto inclui um `Procfile` para iniciar o servidor WSGI com Gunicorn. No
+ambiente de hospedagem, configure as variáveis de produção e execute:
+
+```bash
+python manage.py migrate
+python manage.py collectstatic --noinput
+gunicorn project.wsgi:application
+```
+
+Quando `DATABASE_URL` estiver definida, a aplicação usa PostgreSQL com conexões
+persistentes e verificação de saúde. Sem essa variável, o SQLite continua sendo
+usado para desenvolvimento local. O WhiteNoise entrega os arquivos estáticos
+com nomes versionados, compressão e cache.
+
+As fotos dos contatos são arquivos de mídia privados e não são atendidas pelo
+WhiteNoise. Em produção, configure `MEDIA_ROOT` em um volume persistente ou
+adapte o armazenamento para um serviço privado compatível com a hospedagem.
+
 ## Testes
 
-O projeto possui 23 testes para isolamento entre usuários, autenticação, fotos
+O projeto possui 26 testes para isolamento entre usuários, autenticação, fotos
 protegidas, CRUD de contatos, atualização de perfil, alteração de senha, logout
-e exclusão. A cobertura atual é de 97,4%, com limite mínimo de 95% na CI.
+e exclusão. A cobertura atual é de 97%, com limite mínimo de 95% na CI.
 
 ```bash
 python -m pip install -r requirements-dev.txt
@@ -169,7 +194,7 @@ relatório HTML como artefato em cada push ou pull request direcionado à branch
 
 ## Próximas melhorias
 
-- Publicar uma demonstração com PostgreSQL.
+- Publicar uma demonstração usando a configuração PostgreSQL já preparada.
 - Adicionar importação e exportação de contatos em CSV.
 - Incluir filtros por categoria e ordenação da listagem.
 
