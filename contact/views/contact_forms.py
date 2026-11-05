@@ -12,7 +12,7 @@ def create(request):
     form_action = reverse('contact:create')
     
     if request.method == 'POST':
-        form = ContactForm(request.POST, request.FILES)
+        form = ContactForm(request.POST, request.FILES, user=request.user)
 
         context = {
               'form': form,
@@ -32,7 +32,7 @@ def create(request):
         )
 
     context = {
-        'form': ContactForm(),
+        'form': ContactForm(user=request.user),
         'form_action': form_action
     }
 
@@ -53,7 +53,12 @@ def update(request, contact_id):
     form_action = reverse('contact:update', args=(contact_id, ))
     
     if request.method == 'POST':
-        form = ContactForm(request.POST, request.FILES, instance=contact)
+        form = ContactForm(
+            request.POST,
+            request.FILES,
+            instance=contact,
+            user=request.user,
+        )
 
         context = {
               'form': form,
@@ -71,7 +76,7 @@ def update(request, contact_id):
         )
 
     context = {
-        'form': ContactForm(instance=contact),
+        'form': ContactForm(instance=contact, user=request.user),
         'form_action': form_action
     }
 

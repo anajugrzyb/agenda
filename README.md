@@ -12,7 +12,7 @@ excluir contatos sem expor dados para outras contas.
 - Agenda isolada por usuário.
 - Criação, visualização, edição e exclusão de contatos.
 - Busca por nome, sobrenome, telefone ou e-mail.
-- Organização por categorias.
+- Organização por categorias privadas de cada usuário.
 - Upload protegido de foto do contato.
 - Paginação da listagem.
 - Mensagens de confirmação e validação de formulários.
@@ -21,7 +21,9 @@ excluir contatos sem expor dados para outras contas.
 ## Segurança e privacidade
 
 - Todas as páginas da agenda exigem autenticação.
+- Contatos e categorias possuem proprietário obrigatório no banco de dados.
 - Consultas, edições e exclusões são limitadas ao proprietário do contato.
+- Categorias de outras contas não são exibidas nem aceitas pelos formulários.
 - Fotos são entregues por uma rota autenticada, em vez de uma URL pública de
   mídia.
 - Logout e exclusão definitiva utilizam `POST` com proteção CSRF.

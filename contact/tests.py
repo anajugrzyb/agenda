@@ -29,6 +29,14 @@ class ContactPrivacyTests(TestCase):
             username='other',
             password='strong-test-password',
         )
+        cls.owner_category = Category.objects.create(
+            name='Trabalho',
+            owner=cls.owner,
+        )
+        cls.other_category = Category.objects.create(
+            name='Privada',
+            owner=cls.other_user,
+        )
         cls.owner_contact = Contact.objects.create(
             first_name='Contato do proprietário',
             phone='111111111',
@@ -218,10 +226,46 @@ class ContactPrivacyTests(TestCase):
         self.assertFalse(Contact.objects.filter(pk=self.owner_contact.pk).exists())
 
     def test_contact_and_category_string_representations(self):
-        category = Category.objects.create(name='Trabalho')
-
-        self.assertEqual(str(category), 'Trabalho')
+        self.assertEqual(str(self.owner_category), 'Trabalho')
         self.assertEqual(str(self.owner_contact), 'Contato do proprietário ')
+
+    def test_contact_form_only_lists_current_users_categories(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.get(reverse('contact:create'))
+        categories = response.context['form'].fields['category'].queryset
+
+        self.assertIn(self.owner_category, categories)
+        self.assertNotIn(self.other_category, categories)
+
+    def test_create_rejects_another_users_category(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            reverse('contact:create'),
+            {
+                'first_name': 'Contato',
+                'last_name': 'Inválido',
+                'phone': '555555555',
+                'email': 'categoria-invalida@example.com',
+                'description': '',
+                'category': self.other_category.pk,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['form'].errors['category'])
+        self.assertFalse(
+            Contact.objects.filter(email='categoria-invalida@example.com').exists()
+        )
+
+    def test_deleting_user_cascades_to_private_contacts_and_categories(self):
+        owner_id = self.owner.pk
+
+        self.owner.delete()
+
+        self.assertFalse(Contact.objects.filter(owner_id=owner_id).exists())
+        self.assertFalse(Category.objects.filter(owner_id=owner_id).exists())
 
     def test_empty_search_redirects_to_index(self):
         self.client.force_login(self.owner)

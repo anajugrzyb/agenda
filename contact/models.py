@@ -4,11 +4,22 @@ from django.utils import timezone
 
 
 class Category(models.Model):
+    name = models.CharField(max_length=50)
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='categories',
+    )
+
     class Meta:
         verbose_name = 'Category'
         verbose_name_plural = 'Categories'
-
-    name = models.CharField(max_length=50)
+        constraints = [
+            models.UniqueConstraint(
+                fields=('owner', 'name'),
+                name='unique_category_name_per_owner',
+            ),
+        ]
 
     def __str__(self) -> str:
         return self.name
@@ -30,8 +41,8 @@ class Contact(models.Model):
     )
     owner = models.ForeignKey(
         User,
-        on_delete=models.SET_NULL,
-        blank=True, null=True
+        on_delete=models.CASCADE,
+        related_name='contacts',
     )
 
     def __str__(self) -> str:

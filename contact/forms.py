@@ -30,6 +30,24 @@ class ContactForm(forms.ModelForm):
             'description': 'Observações',
             'category': 'Categoria',
         }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        categories = models.Category.objects.none()
+        if user is not None and user.is_authenticated:
+            categories = models.Category.objects.filter(owner=user)
+        self.fields['category'].queryset = categories.order_by('name')
+
+    def clean_category(self):
+        category = self.cleaned_data.get('category')
+        owner_id = getattr(self.user, 'pk', None)
+        if category and category.owner_id != owner_id:
+            raise ValidationError(
+                'Selecione uma categoria pertencente à sua conta.',
+                code='invalid',
+            )
+        return category
         
     def clean(self):
         cleaned_data = self.cleaned_data
