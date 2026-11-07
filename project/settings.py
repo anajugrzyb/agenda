@@ -57,6 +57,14 @@ ALLOWED_HOSTS = env_list(
 
 CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS')
 
+render_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if render_hostname:
+    if render_hostname not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(render_hostname)
+    render_origin = f'https://{render_hostname}'
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
+
 SECURE_SSL_REDIRECT = not DEBUG
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
