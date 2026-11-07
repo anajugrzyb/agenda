@@ -73,6 +73,12 @@ class ContactPrivacyTests(TestCase):
                 self.assertEqual(response.status_code, 302)
                 self.assertIn(reverse('contact:login'), response.url)
 
+    def test_health_check_is_public(self):
+        response = self.client.get(reverse('health'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'status': 'ok'})
+
     def test_index_only_lists_current_users_contacts(self):
         self.client.force_login(self.owner)
 

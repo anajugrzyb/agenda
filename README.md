@@ -167,9 +167,24 @@ As fotos dos contatos são arquivos de mídia privados e não são atendidas pel
 WhiteNoise. Em produção, configure `MEDIA_ROOT` em um volume persistente ou
 adapte o armazenamento para um serviço privado compatível com a hospedagem.
 
+### Demonstração no Render
+
+O arquivo `render.yaml` descreve uma demonstração gratuita com o serviço web e
+um banco PostgreSQL. Para criar o ambiente:
+
+1. Acesse **New > Blueprint** no painel do Render.
+2. Conecte este repositório do GitHub.
+3. Confirme o Blueprint detectado e clique em **Apply**.
+4. Aguarde o build, as migrações e a verificação de `/health/`.
+
+O plano gratuito é adequado somente para demonstração: o serviço entra em
+repouso após um período sem acessos, o banco gratuito expira após 30 dias e os
+uploads locais podem ser apagados em reinícios ou novos deploys. Nenhuma foto
+de contato real deve ser usada nesse ambiente.
+
 ## Testes
 
-O projeto possui 26 testes para isolamento entre usuários, autenticação, fotos
+O projeto possui 27 testes para isolamento entre usuários, autenticação, fotos
 protegidas, CRUD de contatos, atualização de perfil, alteração de senha, logout
 e exclusão. A cobertura atual é de 97%, com limite mínimo de 95% na CI.
 
