@@ -240,9 +240,11 @@ class ContactPrivacyTests(TestCase):
 
         response = self.client.get(reverse('contact:create'))
         categories = response.context['form'].fields['category'].queryset
+        choices = response.context['form'].fields['category'].choices
 
         self.assertIn(self.owner_category, categories)
         self.assertNotIn(self.other_category, categories)
+        self.assertNotIn('', [value for value, _label in choices])
 
     def test_create_rejects_another_users_category(self):
         self.client.force_login(self.owner)
