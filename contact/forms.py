@@ -38,6 +38,7 @@ class ContactForm(forms.ModelForm):
         if user is not None and user.is_authenticated:
             categories = models.Category.objects.filter(owner=user)
         self.fields['category'].queryset = categories.order_by('name')
+        self.fields['category'].empty_label = None
 
     def clean_category(self):
         category = self.cleaned_data.get('category')
